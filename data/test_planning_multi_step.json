@@ -1,0 +1,10 @@
+{
+  "conversation_id": "test_planning_001",
+  "user_input": "请找出 docs 目录下文件大小最大的那个文件，然后读取它的内容并总结。你需要先用 local_file_search 或逐个用 file_reader 尝试。",
+  "system_prompt_path": "../prompts/local_tool_agent.txt",
+  "selected_memory_ids": [],
+  "use_global_memory": false,
+  "toolset": "basic_tools",
+  "max_turns": 6,
+  "save_memory": "none"
+}

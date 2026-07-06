@@ -1,0 +1,17 @@
+{
+  "status": "success",
+  "memory_id": "mem_conversation_conv_sample_001",
+  "memory_type": "conversation",
+  "conversation_id": "conv_sample_001",
+  "title": "Conversation conv_sample_001",
+  "summary": "Agent 会结合模型、工具和记忆完成任务。",
+  "path": "conversations/conv_sample_001.md",
+  "index_path": "memory_index.json",
+  "created_at": "2026-07-02T14:10:38+08:00",
+  "updated_at": "2026-07-02T14:10:38+08:00",
+  "source_paths": {
+    "messages": "/root/siton-data-1f55405a64d24fe2819a81c90df30517/assignment_B/agent/data/memory_inputs/sample_messages.json",
+    "trace": "/root/siton-data-1f55405a64d24fe2819a81c90df30517/assignment_B/agent/data/memory_inputs/sample_trace.json",
+    "answer": "/root/siton-data-1f55405a64d24fe2819a81c90df30517/assignment_B/agent/data/memory_inputs/sample_final_answer.md"
+  }
+}

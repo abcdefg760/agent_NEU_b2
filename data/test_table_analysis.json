@@ -1,0 +1,10 @@
+{
+  "conversation_id": "test_table_001",
+  "user_input": "请分析 tables/results.csv 文件，告诉我数据的基本统计信息，然后计算 score 列的平均值。",
+  "system_prompt_path": "../prompts/local_tool_agent.txt",
+  "selected_memory_ids": [],
+  "use_global_memory": false,
+  "toolset": "basic_tools",
+  "max_turns": 5,
+  "save_memory": "none"
+}

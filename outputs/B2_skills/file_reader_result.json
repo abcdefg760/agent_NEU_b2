@@ -1,0 +1,14 @@
+{
+  "skill_name": "file_reader",
+  "status": "error",
+  "input": {
+    "path": "not_exist.txt",
+    "max_chars": 100
+  },
+  "output": null,
+  "error": {
+    "type": "FileNotFoundError",
+    "message": "file not found: not_exist.txt"
+  },
+  "latency_ms": 0.241
+}

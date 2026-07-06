@@ -1,0 +1,13 @@
+{
+  "skill_name": "calculator",
+  "status": "error",
+  "input": {
+    "expression": "import os"
+  },
+  "output": null,
+  "error": {
+    "type": "ValueError",
+    "message": "invalid arithmetic expression"
+  },
+  "latency_ms": 0.019
+}

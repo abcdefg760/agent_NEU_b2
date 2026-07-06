@@ -1,0 +1,14 @@
+{
+  "skill_name": "format_converter",
+  "status": "error",
+  "input": {
+    "text": "hello",
+    "target_format": "xml"
+  },
+  "output": null,
+  "error": {
+    "type": "ValueError",
+    "message": "target_format must be markdown or json"
+  },
+  "latency_ms": 0.005
+}

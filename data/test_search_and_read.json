@@ -1,0 +1,10 @@
+{
+  "conversation_id": "test_search_001",
+  "user_input": "搜索 docs 目录下所有包含 'Agent' 或 '工具' 关键词的文件，然后读取匹配度最高的那个文件。",
+  "system_prompt_path": "../prompts/local_tool_agent.txt",
+  "selected_memory_ids": [],
+  "use_global_memory": false,
+  "toolset": "basic_tools",
+  "max_turns": 5,
+  "save_memory": "none"
+}

@@ -1,0 +1,52 @@
+{
+  "skill_name": "table_analyzer",
+  "status": "success",
+  "input": {
+    "path": "tables/results.csv",
+    "max_rows_preview": 5,
+    "describe": true
+  },
+  "output": {
+    "path": "tables/results.csv",
+    "num_rows": 3,
+    "num_columns": 3,
+    "columns": [
+      "task",
+      "score",
+      "latency"
+    ],
+    "preview": [
+      {
+        "task": "read_file",
+        "score": "92",
+        "latency": "15.2"
+      },
+      {
+        "task": "calculate",
+        "score": "98",
+        "latency": "3.1"
+      },
+      {
+        "task": "search",
+        "score": "88",
+        "latency": "20.5"
+      }
+    ],
+    "describe": {
+      "score": {
+        "count": 3,
+        "min": 88.0,
+        "max": 98.0,
+        "mean": 92.66666666666667
+      },
+      "latency": {
+        "count": 3,
+        "min": 3.1,
+        "max": 20.5,
+        "mean": 12.933333333333332
+      }
+    }
+  },
+  "error": null,
+  "latency_ms": 0.748
+}

@@ -1,0 +1,21 @@
+{
+  "mode": "prompt_json",
+  "backend": "transformers",
+  "raw_text": "{\"content\":\"\",\"tool_calls\":[{\"id\":\"call_001\",\"name\":\"file_reader\",\"args\":{\"path\":\"docs/agent_intro.txt\",\"max_chars\":10000}}]}\n",
+  "parsed_candidate": {
+    "content": "",
+    "tool_calls": [
+      {
+        "id": "call_001",
+        "name": "file_reader",
+        "args": {
+          "path": "docs/agent_intro.txt",
+          "max_chars": 10000
+        }
+      }
+    ]
+  },
+  "status": "success",
+  "error": null,
+  "generated_at": "2026-07-06T09:55:47+08:00"
+}

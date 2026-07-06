@@ -1,0 +1,10 @@
+{
+  "conversation_id": "test_error_001",
+  "user_input": "请读取 docs/不存在的文件.txt 的内容并总结。",
+  "system_prompt_path": "../prompts/local_tool_agent.txt",
+  "selected_memory_ids": [],
+  "use_global_memory": false,
+  "toolset": "basic_tools",
+  "max_turns": 4,
+  "save_memory": "none"
+}

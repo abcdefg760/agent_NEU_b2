@@ -1,0 +1,10 @@
+{
+  "conversation_id": "test_multi_002",
+  "user_input": "请先用 file_reader 读取 tables/results.csv 的原始内容，告诉我里面有什么数据，然后用 calculator 计算这些数据中 score 列三个数值的总和。注意：你必须同时使用这两个工具，不能跳过任何一步。",
+  "system_prompt_path": "../prompts/local_tool_agent.txt",
+  "selected_memory_ids": [],
+  "use_global_memory": false,
+  "toolset": "basic_tools",
+  "max_turns": 6,
+  "save_memory": "none"
+}

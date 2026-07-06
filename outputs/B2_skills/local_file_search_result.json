@@ -1,0 +1,24 @@
+{
+  "skill_name": "local_file_search",
+  "status": "success",
+  "input": {
+    "query": "Agent 工具调用",
+    "root_dir": "docs",
+    "file_types": [
+      "txt",
+      "md"
+    ],
+    "top_k": 5
+  },
+  "output": {
+    "results": [
+      {
+        "path": "docs/agent_intro.txt",
+        "score": 3,
+        "snippet": "Agent 系统通常由模型、工具、记忆和执行循环组成。 工具调用让模型能够读取本地文件、执行计算，并把结果用于后续回答。 Memory 为 Agent 提供全局知识和历史对话上下文。"
+      }
+    ]
+  },
+  "error": null,
+  "latency_ms": 1.334
+}
