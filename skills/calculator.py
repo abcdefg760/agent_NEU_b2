@@ -4,6 +4,10 @@ import ast
 import math
 import operator
 
+from typing import Any
+
+from skills.errors import SkillError
+
 
 _BINARY_OPERATORS = {
     ast.Add: operator.add,
@@ -28,21 +32,66 @@ def _evaluate(node: ast.AST) -> int | float:
         left = _evaluate(node.left)
         right = _evaluate(node.right)
         if isinstance(node.op, ast.Pow) and abs(right) > 12:
-            raise ValueError("exponent magnitude must not exceed 12")
-        result = _BINARY_OPERATORS[type(node.op)](left, right)
+            raise SkillError(
+                "CALCULATION_LIMIT_EXCEEDED",
+                "exponent magnitude must not exceed 12",
+                category="limit",
+            )
+        try:
+            result = _BINARY_OPERATORS[type(node.op)](left, right)
+        except ZeroDivisionError as exc:
+            raise SkillError(
+                "DIVISION_BY_ZERO",
+                "division by zero",
+                category="validation",
+            ) from exc
         if isinstance(result, complex) or not math.isfinite(float(result)) or abs(result) > 1e100:
-            raise ValueError("calculation result is out of range")
+            raise SkillError(
+                "CALCULATION_LIMIT_EXCEEDED",
+                "calculation result is out of range",
+                category="limit",
+            )
         return result
-    raise ValueError(f"unsupported expression element: {type(node).__name__}")
+    raise SkillError(
+        "UNSUPPORTED_EXPRESSION",
+        f"unsupported expression element: {type(node).__name__}",
+        category="validation",
+    )
 
 
-def calculator(expression: str) -> dict:
+def calculator(expression: str) -> dict[str, int | float]:
+    """Evaluate a bounded arithmetic expression without using dynamic execution.
+
+    Args:
+        expression: Arithmetic expression containing numeric literals and supported
+            unary or binary operators.
+
+    Returns:
+        A mapping containing the numeric calculation result.
+
+    Raises:
+        SkillError: If the expression is empty, malformed, unsupported, or exceeds
+            configured arithmetic limits.
+    """
     if not isinstance(expression, str) or not expression.strip():
-        raise ValueError("expression must be a non-empty string")
+        raise SkillError(
+            "INVALID_ARGUMENT",
+            "expression must be a non-empty string",
+            category="validation",
+        )
     if len(expression) > 200:
-        raise ValueError("expression is too long")
+        raise SkillError(
+            "INPUT_LIMIT_EXCEEDED",
+            "expression must not exceed 200 characters",
+            category="limit",
+            details={"max_chars": 200},
+        )
     try:
         tree = ast.parse(expression, mode="eval")
     except SyntaxError as exc:
-        raise ValueError("invalid arithmetic expression") from exc
+        raise SkillError(
+            "INVALID_EXPRESSION",
+            "invalid arithmetic expression",
+            category="validation",
+        ) from exc
     return {"result": _evaluate(tree)}
