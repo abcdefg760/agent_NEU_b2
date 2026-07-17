@@ -4,14 +4,13 @@
 ## 目录
 
 1. [五个基础 Skill 详细说明](#一五个基础-skill)
-2. [独立命令行测试](#二独立命令行测试)
-3. [Skill 与 Tool Schema 的区别](#三skill-与-tool-schema-的区别)
-4. [Skill 增强：local_file_search 语义检索](#四skill-增强)
-5. [进阶 Skill：沙箱代码执行](#五进阶-skill沙箱代码执行)
-6. [复合 Skill：读取后转换](#六复合-skill读取文件后转换)
-7. [错误分类体系](#七错误分类体系)
-8. [高成本/高风险 Skill 限制](#八高成本高风险-skill-限制)
-9. [总结](#九总结)
+2. [Skill 与 Tool Schema 的区别](#二skill-与-tool-schema-的区别)
+3. [Skill 增强：local_file_search 语义检索](#三skill-增强)
+4. [进阶 Skill：沙箱代码执行](#四进阶-skill沙箱代码执行)
+5. [复合 Skill：读取后转换](#五复合-skill读取文件后转换)
+6. [错误分类体系](#六错误分类体系)
+7. [高成本/高风险 Skill 限制](#七高成本高风险-skill-限制)
+8. [总结](#八总结)
 
 ---
 
@@ -241,165 +240,7 @@
 
 ---
 
-## 二、独立命令行测试
-
-每个 Skill 均可通过 B2 (`b2_run_skill.py`) 命令行独立执行。
-
-### 使用 B2 运行单个 Skill 的通用格式
-
-```bash
-python code/b2_run_skill.py \
-  --skill <skill_name> \
-  --input <input.json> \
-  --outdir <output_dir> \
-  [--data_root <data_root>] \
-  [--tools_config <config.yaml>]
-```
-
-### 2.1 calculator
-
-#### 正常输入 `tests/fixtures/calculator_ok.json`
-```json
-{"expression": "(3 + 4) * 6 / 2"}
-```
-
-```bash
-python code/b2_run_skill.py \
-  --skill calculator \
-  --input tests/fixtures/calculator_ok.json \
-  --outdir outputs/calculator_test
-```
-
-预期输出：
-```json
-{
-  "skill_name": "calculator",
-  "status": "success",
-  "input": {"expression": "(3 + 4) * 6 / 2"},
-  "output": {"result": 21.0},
-  "error": null,
-  "latency_ms": 0.123
-}
-```
-
-#### 异常输入 `tests/fixtures/calculator_zero_div.json`
-```json
-{"expression": "1 / 0"}
-```
-
-```bash
-python code/b2_run_skill.py \
-  --skill calculator \
-  --input tests/fixtures/calculator_zero_div.json \
-  --outdir outputs/calculator_error
-```
-
-预期输出（status=error）：
-```json
-{
-  "skill_name": "calculator",
-  "status": "error",
-  "input": {"expression": "1 / 0"},
-  "output": null,
-  "error": {
-    "type": "SkillError",
-    "message": "division by zero",
-    "code": "DIVISION_BY_ZERO",
-    "category": "validation",
-    "retryable": false
-  },
-  "latency_ms": 0.456
-}
-```
-
-### 2.2 file_reader
-
-#### 正常输入 `tests/fixtures/file_reader_ok.json`
-```json
-{"path": "docs/intro.txt", "max_chars": 100}
-```
-
-预期输出（status=success，`truncated` 字段指示是否截断）
-
-#### 异常输入 `tests/fixtures/file_reader_escape.json`
-```json
-{"path": "../secret.txt"}
-```
-
-预期输出（status=error，`error.code` = `"PATH_OUTSIDE_DATA_ROOT"`）
-
-### 2.3 local_file_search
-
-#### 正常输入 `tests/fixtures/search_keyword.json`
-```json
-{"query": "tool schema", "root_dir": "docs", "mode": "keyword", "top_k": 5}
-```
-
-预期输出含带 `keyword_score` 的排序结果列表。
-
-#### 异常输入 `tests/fixtures/search_bad_mode.json`
-```json
-{"query": "tool", "mode": "unsupported"}
-```
-
-预期输出（status=error，`error.code` = `"INVALID_SEARCH_MODE"`）
-
-### 2.4 table_analyzer
-
-#### 正常输入 `tests/fixtures/table_ok.json`
-```json
-{"path": "scores.csv", "max_rows_preview": 3, "describe": true}
-```
-
-预期输出含 `num_rows`, `columns`, `preview`, `describe` 统计数据。
-
-#### 异常输入 `tests/fixtures/table_bad_format.json`
-```json
-{"path": "docs/intro.txt"}
-```
-
-预期输出（status=error，`error.code` = `"UNSUPPORTED_FORMAT"`）
-
-### 2.5 format_converter
-
-#### 正常输入 `tests/fixtures/converter_to_markdown.json`
-```json
-{"text": "line one\nline two\nline three", "target_format": "markdown"}
-```
-
-预期输出含 `formatted_text`（每行前加 `- `）和 `generated_file_path`。
-
-#### 异常输入 `tests/fixtures/converter_bad_format.json`
-```json
-{"text": "some text", "target_format": "xml"}
-```
-
-预期输出（status=error，`error.code` = `"UNSUPPORTED_FORMAT"`）
-
----
-
-### 自动化测试
-
-除手动 CLI 测试外，agent2 提供了 17 个自动化单元测试：
-
-```bash
-# 运行所有 B2 测试
-python -m unittest discover -s tests -p 'test_b*.py' -v
-```
-
-**test_b2_contract.py**（6 个测试）— 验证 5 个原有 Skill 的公共契约：
-- `test_public_skills_have_annotations_and_google_sections` — 类型注解 + docstring 完整性
-- `test_calculator_success_and_structured_error` — 成功 + 除零错误
-- `test_file_reader_success_missing_and_escape` — 截断 + 不存在 + 路径逃逸
-- `test_keyword_search_success_and_validation_error` — 搜索 + 格式错误
-- `test_table_analyzer_success_and_format_error` — 统计 + 格式错误
-- `test_format_converter_success_error_and_filename_sanitization` — 转换 + 文件名净化
-
-**test_b2_enhanced.py**（11 个测试）— 验证增强功能和新增 Skill。
-
----
-
-## 三、Skill 与 Tool Schema 的区别
+## 二、Skill 与 Tool Schema 的区别
 
 > **一句话**：Skill 是引擎，Tool Schema 是说明书。
 
@@ -411,7 +252,7 @@ python -m unittest discover -s tests -p 'test_b*.py' -v
 | **消费者** | B2 框架直接调用 | **LLM** 用来生成 tool_call，**框架** 用来做参数校验 |
 | **职责** | 执行业务逻辑，处理输入，返回输出 | 告诉 LLM：这个工具叫什么、干什么、接受什么参数、返回什么 |
 
-### 3.1 具体例子：calculator
+### 2.1 具体例子：calculator
 
 **Skill（`skills/calculator.py`）—— 实际跑的东西**：
 
@@ -445,7 +286,7 @@ result = calculator("2 + 3 * 4")                  # => {"result": 14}
 }
 ```
 
-### 3.2 两种生成方式
+### 2.2 两种生成方式
 
 | 模式 | 来源 | 优势 |
 |------|------|------|
@@ -454,7 +295,7 @@ result = calculator("2 + 3 * 4")                  # => {"result": 14}
 
 B2 自动生成 manual vs auto 的 **diff 报告**，确保两者一致（当前 9/9 零差异）。
 
-### 3.3 为什么要分开
+### 2.3 为什么要分开
 
 ```
 用户输入 "2+3等于几？"
@@ -482,9 +323,9 @@ B2 自动生成 manual vs auto 的 **diff 报告**，确保两者一致（当前
 
 ---
 
-## 四、Skill 增强
+## 三、Skill 增强
 
-### 4.1 local_file_search 的本地检索能力增强
+### 3.1 local_file_search 的本地检索能力增强
 
 原有的 `local_file_search` 仅支持关键词匹配（统计词频 → 排序）。增强后新增两种检索模式：
 
@@ -527,7 +368,7 @@ score = (1 - semantic_weight) × keyword_normalized + semantic_weight × semanti
 
 `_normalize_scores()` 对语义分数做 min-max 归一化 [0, 1]，保留排序不变，使混合模式的权重系数有意义。
 
-### 4.2 file_reader 格式扩展
+### 3.2 file_reader 格式扩展
 
 | 特性 | 增强前 | 增强后 |
 |------|--------|--------|
@@ -538,7 +379,7 @@ score = (1 - semantic_weight) × keyword_normalized + semantic_weight × semanti
 | 行限制 | ❌ | `max_rows` 控制 CSV/TSV 行数 |
 | UTF-8 校验 | ❌ | 显式检测 `UnicodeDecodeError` |
 
-### 4.3 路径安全增强（`skills/__init__.py`）
+### 3.3 路径安全增强（`skills/__init__.py`）
 
 `resolve_data_path()` 新增：
 - **Windows 绝对路径绕过检测**：`C:\Windows\...` 在 POSIX 系统上 `Path.is_absolute()` 为 False，但 `PureWindowsPath.is_absolute()` 为 True
@@ -547,9 +388,9 @@ score = (1 - semantic_weight) × keyword_normalized + semantic_weight × semanti
 
 ---
 
-## 五、进阶 Skill：沙箱代码执行
+## 四、进阶 Skill：沙箱代码执行
 
-### 5.1 python_executor
+### 4.1 python_executor
 
 **实现文件**：`skills/python_executor.py`（371 行）
 
@@ -635,9 +476,9 @@ HOME=/tmp/..., LANG=C.UTF-8, PATH=/usr/local/bin:..., PYTHONHASHSEED=0
 
 ---
 
-## 六、复合 Skill：读取文件后转换
+## 五、复合 Skill：读取文件后转换
 
-### 6.1 read_and_convert
+### 5.1 read_and_convert
 
 **实现文件**：`skills/read_and_convert.py`（55 行）
 
@@ -687,9 +528,9 @@ result = read_and_convert(
 
 ---
 
-## 七、错误分类体系
+## 六、错误分类体系
 
-### 7.1 SkillError 结构
+### 6.1 SkillError 结构
 
 所有 Skill 统一使用 `skills/errors.py` 中定义的 `SkillError`：
 
@@ -706,7 +547,7 @@ class SkillError(Exception):
     ) -> None: ...
 ```
 
-### 7.2 错误分类（category）
+### 6.2 错误分类（category）
 
 | 分类 | 含义 | 示例错误码 |
 |------|------|-----------|
@@ -722,7 +563,7 @@ class SkillError(Exception):
 | `contract` | 契约违例 | `INVALID_SKILL_OUTPUT` |
 | `authorization` | 权限不足 | `TOOL_NOT_ALLOWED`, `PERMISSION_DENIED` |
 
-### 7.3 完整错误码清单（按 Skill 分组）
+### 6.3 完整错误码清单（按 Skill 分组）
 
 #### calculator
 `INVALID_ARGUMENT`, `INPUT_LIMIT_EXCEEDED`, `INVALID_EXPRESSION`, `UNSUPPORTED_EXPRESSION`, `DIVISION_BY_ZERO`, `CALCULATION_LIMIT_EXCEEDED`
@@ -748,7 +589,7 @@ class SkillError(Exception):
 #### web_fetcher
 `INVALID_ARGUMENT`, `INPUT_LIMIT_EXCEEDED`, `WEB_POLICY_ERROR`, `INVALID_URL`, `URL_SCHEME_DENIED`, `URL_CREDENTIALS_DENIED`, `URL_PRIVATE_ADDRESS`, `URL_DOMAIN_DENIED`, `WEB_DNS_ERROR`, `WEB_DNS_REBINDING_DETECTED`, `WEB_TIMEOUT`, `TRANSIENT_NETWORK_ERROR`, `WEB_PEER_UNVERIFIED`, `WEB_REDIRECT_ERROR`, `WEB_REDIRECT_LIMIT_EXCEEDED`, `HTTP_RETRYABLE_ERROR`, `HTTP_ERROR`, `CONTENT_TYPE_DENIED`, `RESPONSE_SIZE_LIMIT_EXCEEDED`, `WEB_DEPENDENCY_UNAVAILABLE`
 
-### 7.4 标准异常自动映射
+### 6.4 标准异常自动映射
 
 `exception_to_error()` 将 Python 标准异常自动转换为结构化错误：
 
@@ -762,9 +603,9 @@ TypeError/ValueError → code="INVALID_ARGUMENT",  category="validation",   retr
 
 ---
 
-## 八、高成本/高风险 Skill 限制
+## 七、高成本/高风险 Skill 限制
 
-### 8.1 限制策略总览
+### 7.1 限制策略总览
 
 | 限制类型 | 适用 Skill | 具体机制 |
 |----------|-----------|----------|
@@ -781,7 +622,7 @@ TypeError/ValueError → code="INVALID_ARGUMENT",  category="validation",   retr
 | **重定向限制** | web_fetcher | max_redirects，每跳验证 DNS |
 | **Feature 开关** | python_executor, web_fetcher | 可全局关闭高危 Skill |
 
-### 8.2 具体限制配置（`configs/tools.yaml`）
+### 7.2 具体限制配置（`configs/tools.yaml`）
 
 ```yaml
 settings:
@@ -818,7 +659,7 @@ settings:
     web_fetcher: true            # 可全局关闭
 ```
 
-### 8.3 风险评估配置（每个 tool 级别）
+### 7.3 风险评估配置（每个 tool 级别）
 
 ```yaml
 tools:
@@ -837,24 +678,23 @@ tools:
 
 ---
 
-## 九、总结
+## 八、总结
 
-### 9.1 实现清单
+### 8.1 实现清单
 
 | 需求 | 状态 | 对应文件 |
 |------|------|----------|
 | 5 个基础 Skill | ✅ | `skills/calculator.py`, `file_reader.py`, `local_file_search.py`, `table_analyzer.py`, `format_converter.py` |
 | 明确输入/输出/描述 | ✅ | 每个函数含完整类型注解 + Google docstring |
 | JSON 可序列化输出 | ✅ | 全部返回 `dict`，内部仅含 JSON 兼容类型 |
-| 独立 CLI 测试 | ✅ | B2 命令行 + 10 个输入样例 |
-| Skill vs Tool Schema 说明 | ✅ | 第三章完整论述 |
+| Skill vs Tool Schema 说明 | ✅ | 第二章完整论述 |
 | 增强现有 Skill | ✅ | `local_file_search` 语义/混合搜索、`file_reader` 多格式 |
 | 进阶 Skill（沙箱） | ✅ | `python_executor` — 7 层安全防护 |
 | 复合 Skill | ✅ | `read_and_convert` — file_reader + format_converter |
 | 错误分类 + 错误码 | ✅ | `skills/errors.py` — 10 个 category，60+ 个稳定错误码 |
 | 高成本/风险限制 | ✅ | 输入/输出/文件/时间/内存/进程/网络多层限制 |
 
-### 9.2 项目结构
+### 8.2 项目结构
 
 ```
 agent2/
@@ -882,7 +722,7 @@ agent2/
     └── B2_implementation_report.md
 ```
 
-### 9.3 验证结果
+### 8.3 验证结果
 
 - **17** 个 B2 单元测试全部通过（`python -m unittest discover -s tests -p 'test_b2*.py' -v`）
 - **15/15** 工具执行正确性用例通过
